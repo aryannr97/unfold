@@ -1,0 +1,38 @@
+run:
+  timeout: 5m
+  tests: false
+
+linters:
+  enable:
+    - govet
+    - staticcheck  
+    - unused
+    - ineffassign
+    - gosec
+    - errcheck
+    - bodyclose
+    - rowserrcheck
+    - sqlclosecheck
+    - gocritic
+    #- shadow
+    - prealloc
+    - unconvert
+    - unparam
+    - gocognit
+    - gocyclo
+    - revive
+    - goconst
+
+linters-settings:
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - performance
+      #- security
+    disabled-checks:
+      - commentedOutCode  # Allow commented code
+      - ifElseChain      # Don't force switch statements
+
+issues:
+  exclude-dirs:
+    - pkg/aws
