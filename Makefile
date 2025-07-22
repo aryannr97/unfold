@@ -11,25 +11,25 @@ help:
 # Run linter
 lint:
 	@echo "+ $@"
-	@$(golangci-lint run)
+	golangci-lint run
 
 # Run tests
 test:
 	@echo "+ $@"
-	@$(go test -v ./...)
+	go test -v ./...
 
 # Run tests with coverage
 test-coverage:
 	@echo "+ $@"
-	@$(go test -v -coverprofile=coverage.out ./...)
+	go test -v -coverprofile=coverage.out ./...
 
 # Build the application
 build:
 	@echo "+ $@"
-	@$(go build -v ./...)
+	go build -v ./...
 
 # Clean build artifacts
 clean:
 	@echo "+ $@"
-	@$(go clean)
-	@$(rm -f coverage.out)
+	go clean
+	rm -f coverage.out
