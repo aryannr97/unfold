@@ -77,7 +77,6 @@ func (s *Spinner) run() {
 	for {
 		select {
 		case <-osCue:
-			fmt.Println("Clearing spinner")
 			ShowCursor()
 			// If test is true, don't exit the program as error
 			if !s.test {
