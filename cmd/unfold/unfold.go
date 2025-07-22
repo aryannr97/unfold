@@ -1,0 +1,80 @@
+package main
+
+import (
+	"fmt"
+	"log"
+	"os"
+
+	"github.com/aryannr97/unfold/pkg/azure"
+	"github.com/aryannr97/unfold/pkg/google"
+	"github.com/aryannr97/unfold/pkg/helpers"
+	"github.com/aryannr97/unfold/pkg/registry"
+	"github.com/aryannr97/unfold/pkg/spinner"
+)
+
+func main() {
+	defer helpers.GracefullyExit()
+
+	// Check if the command is provided
+	if len(os.Args) < 2 {
+		log.Println("[unfold] provide valid command")
+		return
+	}
+
+	// Get the command from the arguments
+	inputCommand := os.Args[1]
+
+	// Collect the cli command registry
+	reg := registry.New()
+
+	// Check if the command is valid
+	if _, ok := reg[inputCommand]; !ok {
+		log.Println("[unfold] provide valid command")
+		return
+	}
+
+	// Initialize the azure service
+	err := azure.StartService()
+	if err != nil {
+		log.Fatal(err) //nolint:gocritic
+	}
+
+	// Initialize the google service
+	err = google.StartService()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Capture the output in common variable
+	output := ""
+
+	// Initialize the spinner
+	spinner := spinner.Get(spinner.BrailDot)
+	go spinner.Start()
+	defer spinner.Clear()
+
+	// Check if the sub-command or value is provided
+	if len(os.Args) < 3 {
+		output = "[unfold] provide valid sub-command or value for the command"
+	} else {
+		inputSubCommand := os.Args[2]
+
+		if base, ok := reg[inputCommand]; !ok {
+			output = fmt.Sprintf("[unfold] %s command not found", inputCommand)
+		} else {
+			if cmd, ok := base[inputSubCommand]; !ok {
+				output = fmt.Sprintf("[unfold] %s %s command not found", inputCommand, inputSubCommand)
+			} else {
+				err := cmd.GetFlagSet().Parse(os.Args[3:])
+				if err != nil {
+					output = fmt.Sprintf("[unfold] %s", err.Error())
+				} else {
+					output = cmd.Execute()
+				}
+			}
+		}
+	}
+
+	// Print the output
+	log.Println(output)
+}
