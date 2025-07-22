@@ -1,4 +1,10 @@
 # unfold
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/aryannr97/unfold)
+[![Go Reference](https://pkg.go.dev/badge/github.com/aryannr97/unfold.svg)](https://pkg.go.dev/github.com/aryannr97/unfold)
+[![Codecov](https://img.shields.io/codecov/c/github/aryannr97/unfold)](https://app.codecov.io/gh/aryannr97/unfold)
+[![Go Report Card](https://goreportcard.com/badge/github.com/aryannr97/unfold)](https://goreportcard.com/report/github.com/aryannr97/unfold)
+[![Linter](https://img.shields.io/badge/Linter-golangci--lint-informational)](https://golangci-lint.run)
+[![MIT license](https://img.shields.io/github/license/aryannr97/unfold)](https://github.com/aryannr97/unfold/blob/main/LICENSE)
 
 A powerful command-line utility for cloud resource management and data decoding operations. `unfold` simplifies common tasks across Azure Marketplace, Google Workspace, and provides handy utilities for JWT and Base64 decoding.
 
