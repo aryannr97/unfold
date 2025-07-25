@@ -61,8 +61,8 @@ func (a *TenantFinder) GetTenantBySubscriptionID(id string) ([]string, error) {
 	resBody := ErrResponse{}
 	reqURL := fmt.Sprintf("/subscriptions/%s?api-version=2022-12-01", id)
 
-	url := MgmtResourceInstance.BaseURL + reqURL
-	resp, _ := MgmtResourceInstance.httpClient.Get(url)
+	url := instances[managementResourceIndex].BaseURL + reqURL
+	resp, _ := instances[managementResourceIndex].httpClient.Get(url)
 
 	// Precautionary check for server timeouts or outages
 	if resp != nil && resp.Body != nil {

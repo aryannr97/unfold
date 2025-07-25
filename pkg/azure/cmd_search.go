@@ -19,7 +19,7 @@ type commandSearchConfig struct {
 // Execute executes the search command
 func (c commandSearchConfig) Execute() string {
 	if *c.AudienceOpts.ID != "" {
-		return fmt.Sprintf("[unfold] %s", Search(*c.AudienceOpts.ID, Config.Offers[*c.AudienceOpts.Offer].ProductDurableID))
+		return fmt.Sprintf("[unfold] %s", Search(*c.AudienceOpts.ID, config.Offers[*c.AudienceOpts.Offer].ProductDurableID))
 	}
 	return "[unfold] id cannot be empty"
 }
