@@ -30,10 +30,10 @@ var (
 
 // Spinner represents the cli spinner
 type Spinner struct {
-	frames []string
-	stop   chan bool
-	done   chan bool
-	test   bool
+	frames   []string
+	stop     chan bool
+	done     chan bool
+	exitFunc func(int)
 }
 
 // Start starts the spinner
@@ -64,9 +64,10 @@ func Get(spinnerType Type) *Spinner {
 		frames = classicFrames
 	}
 	return &Spinner{
-		frames: frames,
-		stop:   make(chan bool, 1),
-		done:   make(chan bool),
+		frames:   frames,
+		stop:     make(chan bool, 1),
+		done:     make(chan bool),
+		exitFunc: os.Exit,
 	}
 }
 
@@ -78,10 +79,7 @@ func (s *Spinner) run() {
 		select {
 		case <-osCue:
 			ShowCursor()
-			// If test is true, don't exit the program as error
-			if !s.test {
-				os.Exit(1)
-			}
+			s.exitFunc(0)
 		case <-s.stop:
 			fmt.Printf("\r \r")
 			ShowCursor()
