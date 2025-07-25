@@ -1,6 +1,7 @@
 package spinner
 
 import (
+	"os"
 	"reflect"
 	"syscall"
 	"testing"
@@ -73,8 +74,9 @@ func TestGet(t *testing.T) {
 
 func Test_Spinner(t *testing.T) {
 	tests := []struct {
-		name    string
-		runTime func(s *Spinner)
+		name     string
+		runTime  func(s *Spinner)
+		exitFunc func(int)
 	}{
 		{
 			name: "Run the spinner",
@@ -82,6 +84,7 @@ func Test_Spinner(t *testing.T) {
 				time.Sleep(1 * time.Second)
 				s.Clear()
 			},
+			exitFunc: os.Exit,
 		},
 		{
 			name: "Run the spinner and stop on os signal",
@@ -89,12 +92,13 @@ func Test_Spinner(t *testing.T) {
 				time.Sleep(1 * time.Second)
 				osCue <- syscall.SIGINT
 			},
+			exitFunc: func(int) {},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := Get(BrailDot)
-			s.test = true
+			s.exitFunc = tt.exitFunc
 			go s.Start()
 			tt.runTime(s)
 			time.Sleep(1 * time.Second)
