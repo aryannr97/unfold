@@ -68,7 +68,7 @@ func MakeConfigurationRequest(image, id, audType, mode string) string {
 	}
 
 	// fetch all plans for offer/image
-	plans, httpErr := getPlans(Config.Offers[image].ProductDurableID)
+	plans, httpErr := getPlans(config.Offers[image].ProductDurableID)
 	if httpErr != nil {
 		return httpErr.Error()
 	}
@@ -99,7 +99,7 @@ func prepareRequestBody(image string, plans []string, audienceList []MSProperty,
 	for _, planID := range plans {
 		resource := MSResource{
 			Schema:  "https://schema.mp.microsoft.com/schema/price-and-availability-update-private-audiences/2022-03-01-preview2",
-			Product: "product/" + Config.Offers[image].ProductDurableID,
+			Product: "product/" + config.Offers[image].ProductDurableID,
 			Plan:    planID,
 			PrivateAudiences: MSPrivateAudience{
 				Add:    audienceList,
@@ -121,17 +121,15 @@ func prepareRequestBody(image string, plans []string, audienceList []MSProperty,
 
 // configurePrivateAudienceAPI makes an actual API call to Azure for syncing private audience
 func configurePrivateAudienceAPI(reqBody MSGraphEnableAccount) (*MSEnableAccountsRes, error) {
-	b, err := json.Marshal(reqBody)
-	if err != nil {
-		return nil, err
-	}
+	b, _ := json.Marshal(reqBody)
+
 	reqURL := "/rp/product-ingestion/configure?$version=2022-03-01-preview2"
 
 	body := bytes.NewBuffer(b)
 
-	url := GraphResourceInstance.BaseURL + reqURL
+	url := instances[graphResourceIndex].BaseURL + reqURL
 
-	resp, err := GraphResourceInstance.httpClient.Post(url, "application/json", body)
+	resp, err := instances[graphResourceIndex].httpClient.Post(url, "application/json", body)
 	if err != nil {
 		return nil, err
 	}
@@ -143,7 +141,7 @@ func configurePrivateAudienceAPI(reqBody MSGraphEnableAccount) (*MSEnableAccount
 		var res MSEnableAccountsRes
 		err := json.NewDecoder(resp.Body).Decode(&res)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("json decode %s", err.Error())
 		}
 		return &res, nil
 	default:
@@ -167,9 +165,9 @@ type Resource struct {
 // getPlans return unique planIDs associated with product durable id of an offer/image.
 func getPlans(productID string) ([]string, error) {
 	reqURL := fmt.Sprintf("/rp/product-ingestion/plan?product=product/%s&$version=2022-03-01-preview2", productID)
-	url := GraphResourceInstance.BaseURL + reqURL
+	url := instances[graphResourceIndex].BaseURL + reqURL
 
-	resp, err := GraphResourceInstance.httpClient.Get(url)
+	resp, err := instances[graphResourceIndex].httpClient.Get(url)
 	if err != nil {
 		return nil, err
 	}
@@ -182,7 +180,7 @@ func getPlans(productID string) ([]string, error) {
 		var ids []string
 		err := json.NewDecoder(resp.Body).Decode(&res)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("json decode %s", err.Error())
 		}
 
 		for _, plan := range res.Value {

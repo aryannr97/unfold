@@ -18,10 +18,8 @@ const (
 	// microsoft/azure domains added under azure.resources in services.yml.
 	// Order of the resources is critical and should not be changed.
 	// Note: Declare new constant variables after the resource indices.
-	partnerResourceIndex       = iota
-	managementResourceIndex    = iota
-	graphResourceIndex         = iota
-	partnerCenterResourceIndex = iota
+	managementResourceIndex = iota
+	graphResourceIndex      = iota
 
 	// ProviderShortName refers to the shortname field of the provider table for Azure
 	ProviderShortName = "MSAZ"
@@ -58,13 +56,12 @@ type AZService struct {
 	httpClient      *http.Client
 }
 
-// Config is package var to store azure service credentials from yaml
-var Config = AZConfig{
+// config is package var to store azure service credentials from yaml
+var config = AZConfig{
 	ClientID:     os.Getenv("AZURE_CLIENT_ID"),
 	ClientSecret: os.Getenv("AZURE_CLIENT_SECRET"),
 	TokenURL:     fmt.Sprintf("https://login.microsoftonline.com/%s/oauth2/token", os.Getenv("AZURE_TENANT_ID")),
 	Resources: []string{
-		"https://cloudpartner.azure.com",
 		"https://management.azure.com",
 		"https://graph.microsoft.com",
 	},
@@ -72,23 +69,10 @@ var Config = AZConfig{
 	IdentityCAFile: os.Getenv("AZURE_CERT_FILE"),
 }
 
-// Instance contains the default AZService instance, initialized by main()
-var Instance *AZService
-
-// MgmtResourceInstance contains the AZService instance to call management APIs of Azure
-var MgmtResourceInstance *AZService
-
-// MgmtResourceInstance contains the AZService instance to call graph APIs of Microsoft
-var GraphResourceInstance *AZService
-
-// GetBaseURL returns base url
-func (svc AZService) GetBaseURL() string {
-	return svc.BaseURL
-}
-
-// GetClient returns oauth http client for interacting with azure apis
-func (svc AZService) GetClient() (*http.Client, error) {
-	return svc.httpClient, nil
+// instances contains the AZService instances to call different APIs of Azure
+var instances = map[int]*AZService{
+	managementResourceIndex: nil,
+	graphResourceIndex:      nil,
 }
 
 // NewService creates a new service from the AZConfig
@@ -107,7 +91,7 @@ func (c *AZConfig) NewService(resourceIndex int) (*AZService, error) {
 		AuthStyle: oauth2.AuthStyleInParams,
 	}
 
-	certs, err := loadCACerts(Config.IdentityCAFile)
+	certs, err := loadCACerts(config.IdentityCAFile)
 	if err != nil {
 		return nil, fmt.Errorf("unable to load Azure identity CA certs: %w", err)
 	}
@@ -120,39 +104,27 @@ func (c *AZConfig) NewService(resourceIndex int) (*AZService, error) {
 	}, nil
 }
 
-// IsTestOfferNamePresent checks if test offer name is present
-// Note: Empty test offer name implies that prod offers will be used
-func (c *AZConfig) IsTestOfferNamePresent() bool {
-	return c.TestOfferName != ""
-}
-
 // StartService starts the Azure service
 func StartService() error {
-	var err error
+	config.IdentityCAFile = os.Getenv("AZURE_CERT_FILE")
 
+	var err error
 	offers, err := os.ReadFile(os.Getenv("AZURE_OFFERS_FILE"))
 	if err != nil {
 		return err
 	}
 
-	err = yaml.Unmarshal(offers, &Config.Offers)
+	err = yaml.Unmarshal(offers, &config.Offers)
 	if err != nil {
 		return err
 	}
 
-	Instance, err = Config.NewService(partnerResourceIndex)
-	if err != nil {
-		return err
-	}
-
-	MgmtResourceInstance, err = Config.NewService(managementResourceIndex)
-	if err != nil {
-		return err
-	}
-
-	GraphResourceInstance, err = Config.NewService(graphResourceIndex)
-	if err != nil {
-		return err
+	for key := range instances {
+		instance, err := config.NewService(key)
+		if err != nil {
+			return err
+		}
+		instances[key] = instance
 	}
 
 	return err
@@ -160,9 +132,6 @@ func StartService() error {
 
 // loadCACerts loads the CA certs from the given path
 func loadCACerts(path string) (*x509.CertPool, error) {
-	if len(path) == 0 {
-		return nil, nil
-	}
 	var err error
 	pem, err := os.ReadFile(path)
 	if err != nil {
