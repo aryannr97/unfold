@@ -2,12 +2,11 @@ package google
 
 import (
 	"fmt"
-	"net/mail"
 	"os"
-	"regexp"
 	"strings"
 
 	"golang.org/x/net/context"
+	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	cloudidentity "google.golang.org/api/cloudidentity/v1"
 	"google.golang.org/api/option"
@@ -20,21 +19,25 @@ const ProviderShortName = "GCE"
 // required for accessing google APIs
 type GCEConfig struct {
 	ServiceAccountKeyFile string `json:"serviceAccountKeyFile" yaml:"serviceAccountKeyFile"`
-	TestGroup             string `json:"testGroup" yaml:"testGroup"`
-
 	// JwkURL is the URL where the JWK to validate the instance identity token can be found.
 	JwkURL string `json:"jwkURL" yaml:"jwkURL"`
+	// TokenSourceFunc is a function that returns a token source.
+	// It is used to override the default token source for testing.
+	tokenSource TokenSourceFunc
 }
 
 // Config contains the actual values from service.yml file
 var Config = GCEConfig{
 	ServiceAccountKeyFile: os.Getenv("GOOGLE_KEYFILE"),
-	TestGroup:             "",
 	JwkURL:                os.Getenv("GOOGLE_JWK_URL"),
 }
 
+type TokenSourceFunc func() oauth2.TokenSource
+
 // NewService creates a new cloudidentity.service from the GCEConfig.
 func (c GCEConfig) NewService() (*Service, error) {
+	Config.ServiceAccountKeyFile = os.Getenv("GOOGLE_KEYFILE")
+
 	var err error
 	var ctx = context.Background()
 
@@ -52,6 +55,11 @@ func (c GCEConfig) NewService() (*Service, error) {
 	}
 	ts := config.TokenSource(ctx)
 
+	// if tokenSourceFunc is set, use it to get the token source
+	if Config.tokenSource != nil {
+		ts = Config.tokenSource()
+	}
+
 	// Build cloud identity API client
 	svc, err := cloudidentity.NewService(ctx, option.WithTokenSource(ts))
 	if err != nil {
@@ -68,9 +76,9 @@ type Service struct {
 	Groups               map[string]*cloudidentity.LookupGroupNameResponse
 }
 
-// Instance holds the cloudidentity.Service as constructed from credentials in services.yml file.
+// instance holds the cloudidentity.Service as constructed from credentials in services.yml file.
 // It also has information of the Groups as fetched using getGroupByID() func.
-var Instance *Service
+var instance *Service
 
 // AddGroup adds Group by groupID and the corresponding cloudidentity.LookupGroupNameResponse
 // to the Groups field of Service.
@@ -89,29 +97,9 @@ func (s *Service) GetGroup(groupID string) *cloudidentity.LookupGroupNameRespons
 	return nil
 }
 
-// IsValidAccountString checks if the given acc string is a validprojectID or EmailID
-func IsValidAccountString(acc string, isGoldImageReq bool) bool {
-	// If acc is of valid email format, return true.
-	_, err := mail.ParseAddress(acc)
-	if err == nil {
-		return true
-	} else if isGoldImageReq {
-		// if acc is not of emailID format and its GoldImageReq return false.
-		return false
-	}
-
-	// else check if its of format matching the below regex
-	idReg := regexp.MustCompile("^[a-zA-Z0-9-]*$")
-	if acc == "" || !idReg.MatchString(acc) || len(acc) > 64 {
-		return false
-	}
-
-	return true
-}
-
 // StartService starts the Google service
 func StartService() error {
 	var err error
-	Instance, err = Config.NewService()
+	instance, err = Config.NewService()
 	return err
 }

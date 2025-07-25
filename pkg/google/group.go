@@ -1,7 +1,6 @@
 package google
 
 import (
-	"fmt"
 	"os"
 
 	ci "google.golang.org/api/cloudidentity/v1"
@@ -10,19 +9,13 @@ import (
 // GetGroupByID returns information about the group for the given groupID
 // from the Instance if already present or calls the google APIs for the same.
 func GetGroupByID(groupID string) (*ci.LookupGroupNameResponse, error) {
-	// Switch to using TestGroup when set in config. They are set in pre prod envs only.
-	if Config.TestGroup != "" {
-		fmt.Printf("requested groupID %s is changed to %s, as this is a pre-prod env.", groupID, Config.TestGroup)
-		groupID = Config.TestGroup
-	}
-
 	// If the information for the group is already present in the instance,
 	// return the value from instance.
-	if g := Instance.GetGroup(groupID); g != nil {
+	if g := instance.GetGroup(groupID); g != nil {
 		return g, nil
 	}
 
-	svc := Instance.CloudIdentityService
+	svc := instance.CloudIdentityService
 
 	id := groupID + os.Getenv("GOOGLE_GCP_DOMAIN")
 	g, err := svc.Groups.Lookup().GroupKeyId(id).Do()
@@ -31,7 +24,7 @@ func GetGroupByID(groupID string) (*ci.LookupGroupNameResponse, error) {
 	}
 
 	// Add group information to the instance to avoid repeated calls to GCE for same information.
-	Instance.AddGroup(groupID, g)
+	instance.AddGroup(groupID, g)
 	return g, nil
 }
 
@@ -48,7 +41,7 @@ func AddMemberToGroupID(groupID string, emailID string) error {
 		Roles:              []*ci.MembershipRole{{Name: "MEMBER"}},
 	}
 
-	svc := Instance.CloudIdentityService
+	svc := instance.CloudIdentityService
 	_, err := svc.Groups.Memberships.Create(g.Name, &membership).Do()
 	if err != nil {
 		return err
@@ -57,14 +50,14 @@ func AddMemberToGroupID(groupID string, emailID string) error {
 	return nil
 }
 
-// AddMemberToGroupID adds a member (by emailID) to the group of given groupID
-func RemoveMemberToGroupID(groupID string, emailID string) error {
+// RemoveMemberFromGroupID removes a member (by emailID) from the group of given groupID
+func RemoveMemberFromGroupID(groupID string, emailID string) error {
 	membership, err := CheckGroupMembershipForEmailIDs(groupID, emailID)
 	if err != nil {
 		return err
 	}
 
-	svc := Instance.CloudIdentityService
+	svc := instance.CloudIdentityService
 	_, err = svc.Groups.Memberships.Delete(membership.Name).Do()
 	if err != nil {
 		return err

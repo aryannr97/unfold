@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/aryannr97/unfold/pkg/commands"
+	"github.com/aryannr97/unfold/pkg/helpers"
 )
 
 // commandGetConfig represents the configuration for the get command
@@ -22,7 +23,7 @@ func (c commandGetConfig) Execute() string {
 		if err != nil {
 			return fmt.Sprintf("[unfold] %s", err.Error())
 		}
-		return fmt.Sprintf("[unfold] retrieved group resource name: %v", res.Name)
+		return fmt.Sprintf("[unfold] retrieved group resource name %v", helpers.GreenValue(res.Name))
 	}
 	return "[unfold] something went wrong"
 }

@@ -17,7 +17,7 @@ func CheckGroupMembershipForEmailIDs(groupID string, emailID string) (found *clo
 		return nil, hErr
 	}
 
-	svc := Instance.CloudIdentityService
+	svc := instance.CloudIdentityService
 	var nextPageToken string
 	memberships := []*cloudidentity.Membership{}
 
