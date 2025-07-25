@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/aryannr97/unfold/pkg/azure"
+	"github.com/aryannr97/unfold/pkg/commands"
 	"github.com/aryannr97/unfold/pkg/google"
 	"github.com/aryannr97/unfold/pkg/helpers"
 	"github.com/aryannr97/unfold/pkg/registry"
@@ -13,36 +14,36 @@ import (
 )
 
 func main() {
-	defer helpers.GracefullyExit()
+	// Collect the cli command registry
+	reg := registry.New()
 
+	output := process(reg)
+	log.Println(output)
+}
+
+func process(reg registry.Registry) string {
+	defer helpers.GracefullyExit()
 	// Check if the command is provided
 	if len(os.Args) < 2 {
-		log.Println("[unfold] provide valid command")
-		return
+		return "[unfold] provide valid command"
 	}
 
 	// Get the command from the arguments
 	inputCommand := os.Args[1]
+	switch inputCommand {
+	case commands.Azure:
+		// Initialize the azure service
+		err := azure.StartService()
+		if err != nil {
+			return fmt.Sprintf("[unfold] %s", err.Error())
+		}
+	case commands.Google:
+		// Initialize the google service
+		err := google.StartService()
+		if err != nil {
+			return fmt.Sprintf("[unfold] %s", err.Error())
+		}
 
-	// Collect the cli command registry
-	reg := registry.New()
-
-	// Check if the command is valid
-	if _, ok := reg[inputCommand]; !ok {
-		log.Println("[unfold] provide valid command")
-		return
-	}
-
-	// Initialize the azure service
-	err := azure.StartService()
-	if err != nil {
-		log.Fatal(err) //nolint:gocritic
-	}
-
-	// Initialize the google service
-	err = google.StartService()
-	if err != nil {
-		log.Fatal(err)
 	}
 
 	// Capture the output in common variable
@@ -75,6 +76,5 @@ func main() {
 		}
 	}
 
-	// Print the output
-	log.Println(output)
+	return output
 }
