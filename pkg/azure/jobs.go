@@ -24,10 +24,10 @@ type MSErrorResp struct {
 
 // GetAzureJobStatus calls the MS service to get the status of the Job
 func GetAzureJobStatus(jobID string) string {
-	reqURL := fmt.Sprintf("rp/product-ingestion/configure/%s/status?$version=2022-07-01", jobID)
-	url := GraphResourceInstance.BaseURL + "/" + reqURL
+	reqURL := fmt.Sprintf("/rp/product-ingestion/configure/%s/status?$version=2022-07-01", jobID)
+	url := instances[graphResourceIndex].BaseURL + reqURL
 
-	resp, err := GraphResourceInstance.httpClient.Get(url)
+	resp, err := instances[graphResourceIndex].httpClient.Get(url)
 	if err != nil {
 		return err.Error()
 	}
@@ -38,7 +38,7 @@ func GetAzureJobStatus(jobID string) string {
 		var res MSEnableAccountsRes
 		err := json.NewDecoder(resp.Body).Decode(&res)
 		if err != nil {
-			return err.Error()
+			return fmt.Sprintf("json decode %v", err.Error())
 		}
 		errB, _ := json.MarshalIndent(res.Errors, "", " ")
 		if res.JobResult == "failed" {

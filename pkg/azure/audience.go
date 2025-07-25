@@ -30,7 +30,7 @@ func Search(id string, offer string) string {
 	if offer == "" {
 		return "offer cannot be empty"
 	}
-	resource, err := GetPrivateAudienceListForPlan(offer)
+	resource, err := GetPrivateAudienceListForOffer(offer)
 	if err != nil {
 		return err.Error()
 	}
@@ -43,13 +43,13 @@ func Search(id string, offer string) string {
 	return fmt.Sprintf("given id %s in private audience", helpers.RedValue("not found"))
 }
 
-// GetPrivateAudienceListForPlan makes a GET request to the Partner Center API
-// to retrieve the private audience list for a specified offer and plan.
-func GetPrivateAudienceListForPlan(offerID string) (TreeResource, error) {
+// GetPrivateAudienceListForOffer makes a GET request to the Partner Center API
+// to retrieve the private audience list for a specified offer.
+func GetPrivateAudienceListForOffer(offerID string) (TreeResource, error) {
 	reqURL := fmt.Sprintf("/rp/product-ingestion/resource-tree/product/%s", offerID)
-	url := GraphResourceInstance.BaseURL + reqURL
+	url := instances[graphResourceIndex].BaseURL + reqURL
 
-	resp, httpErr := GraphResourceInstance.httpClient.Get(url)
+	resp, httpErr := instances[graphResourceIndex].httpClient.Get(url)
 	if httpErr != nil {
 		return TreeResource{}, httpErr
 	}

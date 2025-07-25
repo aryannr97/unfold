@@ -1,0 +1,6 @@
+offer-1:
+  productDurableID: "12345678-1234-1234-1234-123456789abc"
+offer-2:
+  productDurableID: "87654321-4321-4321-4321-210987654321"
+test-offer:
+  productDurableID: "11111111-2222-3333-4444-555555555555"
