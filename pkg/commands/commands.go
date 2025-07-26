@@ -5,7 +5,6 @@ const (
 	Azure  = "azure"
 	Google = "google"
 	JWT    = "jwt"
-	Base64 = "base64"
 
 	// Sub-commands
 	Get       = "get"

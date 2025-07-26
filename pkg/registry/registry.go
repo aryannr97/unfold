@@ -4,7 +4,6 @@ import (
 	"flag"
 
 	"github.com/aryannr97/unfold/pkg/azure"
-	"github.com/aryannr97/unfold/pkg/base64"
 	"github.com/aryannr97/unfold/pkg/commands"
 	"github.com/aryannr97/unfold/pkg/google"
 	"github.com/aryannr97/unfold/pkg/jwt"
@@ -34,9 +33,6 @@ func New() Registry {
 		},
 		commands.JWT: {
 			commands.Decode: jwt.NewCommandModule().CommandDecodeConfig,
-		},
-		commands.Base64: {
-			commands.Decode: base64.NewCommandModule().CommandDecodeConfig,
 		},
 	}
 }
