@@ -6,7 +6,7 @@
 [![Linter](https://img.shields.io/badge/Linter-golangci--lint-informational)](https://golangci-lint.run)
 [![MIT license](https://img.shields.io/github/license/aryannr97/unfold)](https://github.com/aryannr97/unfold/blob/main/LICENSE)
 
-A powerful command-line utility for cloud resource management and data decoding operations. `unfold` simplifies common tasks across Azure Marketplace, Google Workspace, and provides handy utilities for JWT and Base64 decoding.
+A powerful command-line utility for cloud resource management and data decoding operations. `unfold` simplifies common tasks across Azure Marketplace, Google Workspace, and provides handy utilities for JWT.
 
 ## Features
 
@@ -23,7 +23,6 @@ A powerful command-line utility for cloud resource management and data decoding 
 
 ### Decoding Utilities
 - **JWT Decoding**: Parse and display JWT token claims in JSON format
-- **Base64 Decoding**: Decode Base64 encoded strings
 
 ## Installation
 
@@ -121,13 +120,7 @@ unfold google configure -r -id <email-address> -g <group-id>
 #### JWT Decoding
 ```bash
 # Decode JWT token and display claims
-unfold jwt <jwt-token>
-```
-
-#### Base64 Decoding
-```bash
-# Decode Base64 string
-unfold base64 <base64-string>
+unfold jwt decode <jwt-token>
 ```
 
 ## Configuration
@@ -147,7 +140,7 @@ export AZURE_TENANT_ID="your-azure-tenant-id"
 export AZURE_OFFERS_PUBLISHER="your-publisher-name"
 export AZURE_OFFERS_FILE="/path/to/azure-offers.yaml"
 
-# Optional: Azure certificate file for identity verification
+# Azure certificate file for identity verification
 export AZURE_CERT_FILE="/path/to/azure-cert.pem"
 ```
 
@@ -208,12 +201,11 @@ Create a Google Cloud service account and download the JSON key file:
 If you don't already have Azure credentials configured:
 1. Ensure you have an Azure App Registration in Azure Active Directory
 2. Obtain client credentials (client ID and secret) if not already available
-3. Verify your app has appropriate permissions for Partner Center APIs:
-   - `https://cloudpartner.azure.com`
+3. Verify your app has appropriate permissions for Microsoft Management and Graph APIs:
    - `https://management.azure.com`
    - `https://graph.microsoft.com`
 4. Create your marketplace offers configuration in the YAML file
-5. Optionally, configure certificate-based authentication for enhanced security
+5. Configure certificate-based authentication for enhanced security
 
 #### Google Setup
 If you need to set up Google Workspace integration:
