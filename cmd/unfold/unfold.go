@@ -17,11 +17,13 @@ func main() {
 	// Collect the cli command registry
 	reg := registry.New()
 
-	output := process(reg)
+	// Execute the command with respect to the registry and print the output
+	output := run(reg)
 	log.Println(output)
 }
 
-func process(reg registry.Registry) string {
+// run executes the command and returns the output
+func run(reg registry.Registry) string {
 	defer helpers.GracefullyExit()
 	// Check if the command is provided
 	if len(os.Args) < 2 {

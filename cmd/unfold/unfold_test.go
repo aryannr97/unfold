@@ -30,7 +30,7 @@ func Test_main(t *testing.T) {
 	}
 }
 
-func Test_process(t *testing.T) {
+func Test_run(t *testing.T) {
 	type args struct {
 		reg registry.Registry
 	}
@@ -175,7 +175,7 @@ func Test_process(t *testing.T) {
 			if tt.env != nil {
 				tt.env()
 			}
-			output := process(tt.args.reg)
+			output := run(tt.args.reg)
 			if output != tt.expectedOutput {
 				t.Errorf("expected output %s, got %s", tt.expectedOutput, output)
 			}
