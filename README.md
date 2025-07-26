@@ -27,7 +27,7 @@ A powerful command-line utility for cloud resource management and data decoding 
 ## Installation
 
 ### Prerequisites
-- Go 1.23 or later
+- Go 1.24 or later
 - Appropriate cloud credentials (Azure and/or Google)
 
 ### Build from Source
@@ -223,7 +223,7 @@ This project uses GitHub Actions for continuous integration and deployment:
 - **Automated testing** on all pull requests
 - **Code linting** with golangci-lint
 - **Test coverage** reporting via Codecov
-- **Multi-version Go support** (currently Go 1.23.x)
+- **Multi-version Go support** (currently Go 1.24.x)
 
 ### Local Development
 ```bash
