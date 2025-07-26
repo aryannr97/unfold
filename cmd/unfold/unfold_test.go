@@ -13,6 +13,8 @@ func Test_main(t *testing.T) {
 		name string
 		args []string
 	}{
+		// These tests are only used to bump up the code coverage
+		// Logical tests are in the Test_run function
 		{
 			name: "test main entrypoint",
 			args: []string{"unfold", "google", "subcommand"},
