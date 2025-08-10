@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/aryannr97/unfold/compare/v1.0.0...v1.0.1) (2025-08-10)
+
+
+### Bug Fixes
+
+* simplified artificats listing ([19758e1](https://github.com/aryannr97/unfold/commit/19758e1bbc1cd7afd2440343ce2f50db060ed43d))
+
 ## 1.0.0 (2025-08-10)
 
 
