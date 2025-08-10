@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/aryannr97/unfold/pkg/azure"
@@ -13,13 +12,16 @@ import (
 	"github.com/aryannr97/unfold/pkg/spinner"
 )
 
+// Version is the release version of the unfold CLI
+var Version string
+
 func main() {
 	// Collect the cli command registry
 	reg := registry.New()
 
 	// Execute the command with respect to the registry and print the output
 	output := run(reg)
-	log.Println(output)
+	fmt.Println(output)
 }
 
 // run executes the command and returns the output
@@ -45,7 +47,8 @@ func run(reg registry.Registry) string {
 		if err != nil {
 			return fmt.Sprintf("[unfold] %s", err.Error())
 		}
-
+	case commands.Version:
+		return Version
 	}
 
 	// Capture the output in common variable
