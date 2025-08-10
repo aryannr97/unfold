@@ -9,8 +9,14 @@ plugins:
   - "@semantic-release/changelog"
   - - "@semantic-release/github"
     - assets:
-        - path: "dist/*"
-          label: "Binaries"
+        - path: "dist/unfold-linux-amd64.tar.gz"
+          label: "Linux amd64"
+        - path: "dist/unfold-darwin-amd64.tar.gz"
+          label: "macOS amd64"
+        - path: "dist/unfold-darwin-arm64.tar.gz"
+          label: "macOS arm64"
+        - path: "dist/unfold-windows-amd64.zip"
+          label: "Windows amd64 (.zip)"
   - - "@semantic-release/git"
     - assets:
         - "CHANGELOG.md"

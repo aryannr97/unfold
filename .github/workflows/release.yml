@@ -62,10 +62,18 @@ jobs:
       run: |
         mkdir -p dist
         VERSION=${{ steps.version.outputs.version }}
-        CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags="-s -w -X main.Version=v$VERSION" -o dist/unfold-linux-amd64 ./cmd/unfold
-        CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -trimpath -ldflags="-s -w -X main.Version=v$VERSION" -o dist/unfold-darwin-amd64 ./cmd/unfold
-        CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -trimpath -ldflags="-s -w -X main.Version=v$VERSION" -o dist/unfold-darwin-arm64 ./cmd/unfold
-        CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -trimpath -ldflags="-s -w -X main.Version=v$VERSION" -o dist/unfold-windows-amd64.exe ./cmd/unfold
+        # Build into per-OS directories with binary named 'unfold' (or 'unfold.exe' on Windows)
+        mkdir -p dist/linux-amd64 dist/darwin-amd64 dist/darwin-arm64 dist/windows-amd64
+        CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags="-s -w -X main.Version=v$VERSION" -o dist/linux-amd64/unfold ./cmd/unfold
+        CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -trimpath -ldflags="-s -w -X main.Version=v$VERSION" -o dist/darwin-amd64/unfold ./cmd/unfold
+        CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -trimpath -ldflags="-s -w -X main.Version=v$VERSION" -o dist/darwin-arm64/unfold ./cmd/unfold
+        CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -trimpath -ldflags="-s -w -X main.Version=v$VERSION" -o dist/windows-amd64/unfold.exe ./cmd/unfold
+
+        # Package as archives with OS-specific filenames for unique assets; binaries inside are named 'unfold'
+        tar -C dist/linux-amd64 -czf dist/unfold-linux-amd64.tar.gz unfold
+        tar -C dist/darwin-amd64 -czf dist/unfold-darwin-amd64.tar.gz unfold
+        tar -C dist/darwin-arm64 -czf dist/unfold-darwin-arm64.tar.gz unfold
+        (cd dist/windows-amd64 && zip -9 ../unfold-windows-amd64.zip unfold.exe)
 
 
     - name: Semantic Release
