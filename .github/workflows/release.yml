@@ -32,14 +32,6 @@ jobs:
     - name: Run tests
       run: make test
 
-    - name: Build binaries
-      run: |
-        mkdir -p dist
-        GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o dist/unfold-linux-amd64 .
-        GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o dist/unfold-darwin-amd64 .
-        GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w" -o dist/unfold-darwin-arm64 .
-        GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o dist/unfold-windows-amd64.exe .
-
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
@@ -54,6 +46,26 @@ jobs:
           @semantic-release/github@9 \
           @semantic-release/exec@6 \
           conventional-changelog-conventionalcommits@7
+    
+    - name: Get next version
+      id: version
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        VERSION=$(semantic-release --dry-run | grep "The next release version is" | sed -n 's/.*The next release version is \(.*\)/\1/p')
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Next version will be: $VERSION"      
+
+    - name: Build binaries
+      if: steps.version.outputs.version != ''
+      run: |
+        mkdir -p dist
+        VERSION=${{ steps.version.outputs.version }}
+        GOOS=linux GOARCH=amd64 go build -ldflags="-s -w -X main.version=v$VERSION" -o dist/unfold-linux-amd64 .
+        GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w -X main.version=v$VERSION" -o dist/unfold-darwin-amd64 .
+        GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w -X main.version=v$VERSION" -o dist/unfold-darwin-arm64 .
+        GOOS=windows GOARCH=amd64 go build -ldflags="-s -w -X main.version=v$VERSION" -o dist/unfold-windows-amd64.exe .
+
 
     - name: Semantic Release
       env:
