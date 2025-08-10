@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"golang.org/x/oauth2"
+	"google.golang.org/api/option"
 )
 
 func TestStartService(t *testing.T) {
@@ -38,8 +38,9 @@ func TestStartService(t *testing.T) {
 			name: "test start service error cloud identity service creation",
 			modifyConfig: func() {
 				os.Setenv("GOOGLE_KEYFILE", "testdata/google-keyfile.json")
-				Config.tokenSource = func() oauth2.TokenSource {
-					return nil
+				Config.clientOpts = func() []option.ClientOption {
+					// this will fail because both options are not allowed together
+					return []option.ClientOption{option.WithScopes("test-scope"), option.WithAudiences("test-audience")}
 				}
 			},
 			wantErr: true,

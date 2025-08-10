@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"golang.org/x/net/context"
-	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	cloudidentity "google.golang.org/api/cloudidentity/v1"
 	"google.golang.org/api/option"
@@ -21,9 +20,9 @@ type GCEConfig struct {
 	ServiceAccountKeyFile string `json:"serviceAccountKeyFile" yaml:"serviceAccountKeyFile"`
 	// JwkURL is the URL where the JWK to validate the instance identity token can be found.
 	JwkURL string `json:"jwkURL" yaml:"jwkURL"`
-	// TokenSourceFunc is a function that returns a token source.
-	// It is used to override the default token source for testing.
-	tokenSource TokenSourceFunc
+	// clientOpts is a function that returns a client options.
+	// It is used add additional options to the client.
+	clientOpts getOpts
 }
 
 // Config contains the actual values from service.yml file
@@ -32,7 +31,7 @@ var Config = GCEConfig{
 	JwkURL:                os.Getenv("GOOGLE_JWK_URL"),
 }
 
-type TokenSourceFunc func() oauth2.TokenSource
+type getOpts func() []option.ClientOption
 
 // NewService creates a new cloudidentity.service from the GCEConfig.
 func (c GCEConfig) NewService() (*Service, error) {
@@ -55,13 +54,15 @@ func (c GCEConfig) NewService() (*Service, error) {
 	}
 	ts := config.TokenSource(ctx)
 
-	// if tokenSourceFunc is set, use it to get the token source
-	if Config.tokenSource != nil {
-		ts = Config.tokenSource()
+	opts := []option.ClientOption{option.WithTokenSource(ts)}
+
+	// if clientOpts is set, use it to get the client options
+	if Config.clientOpts != nil {
+		opts = append(opts, Config.clientOpts()...)
 	}
 
 	// Build cloud identity API client
-	svc, err := cloudidentity.NewService(ctx, option.WithTokenSource(ts))
+	svc, err := cloudidentity.NewService(ctx, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("unable to retrieve client: %v", err)
 	}
