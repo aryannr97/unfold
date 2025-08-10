@@ -51,7 +51,9 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        VERSION=$(semantic-release --dry-run | grep "The next release version is" | sed -n 's/.*The next release version is \(.*\)/\1/p')
+        OUTPUT=$(semantic-release --dry-run 2>&1 || true)
+        echo "$OUTPUT" | tail -n 50
+        VERSION=$(echo "$OUTPUT" | sed -nE 's/.*[Nn]ext release version is v?([0-9]+\.[0-9]+\.[0-9]+).*/\1/p' | head -n1)
         echo "version=$VERSION" >> $GITHUB_OUTPUT
         echo "Next version will be: $VERSION"      
 
