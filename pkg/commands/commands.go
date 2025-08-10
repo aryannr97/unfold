@@ -2,9 +2,10 @@ package commands
 
 const (
 	// Commands
-	Azure  = "azure"
-	Google = "google"
-	JWT    = "jwt"
+	Azure   = "azure"
+	Google  = "google"
+	JWT     = "jwt"
+	Version = "--version"
 
 	// Sub-commands
 	Get       = "get"
