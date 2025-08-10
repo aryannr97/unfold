@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"syscall"
 	"time"
 )
 
@@ -73,7 +72,7 @@ func Get(spinnerType Type) *Spinner {
 
 // run renders the spinner
 func (s *Spinner) run() {
-	signal.Notify(osCue, syscall.SIGINT, syscall.SIGABRT, syscall.SIGQUIT, syscall.SIGTSTP, syscall.SIGHUP)
+	signal.Notify(osCue, handledSignals...)
 	i := 0
 	for {
 		select {

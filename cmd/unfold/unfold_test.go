@@ -170,6 +170,14 @@ func Test_run(t *testing.T) {
 			cmdArgs:        []string{"unfold", "google", "subcommand"},
 			expectedOutput: "[unfold] open : no such file or directory",
 		},
+		{
+			name: "version command success",
+			env: func() {
+				Version = "test-version"
+			},
+			cmdArgs:        []string{"unfold", "--version"},
+			expectedOutput: "test-version",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
