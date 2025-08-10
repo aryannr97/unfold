@@ -29,8 +29,15 @@ jobs:
     - name: Install dependencies
       run: go mod download
 
-    - name: Run tests
-      run: make test
+    - name: Test with coverage
+      run: make test-coverage
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        file: ./coverage.out
+        fail_ci_if_error: true
 
     - name: Set up Node.js
       uses: actions/setup-node@v4
