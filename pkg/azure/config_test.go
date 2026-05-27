@@ -12,12 +12,16 @@ func TestStartService(t *testing.T) {
 		wantErr      bool
 	}{
 		{
-			name:    "start service success",
+			name: "start service success",
+			modifyConfig: func() {
+				prepareConfig()
+			},
 			wantErr: false,
 		},
 		{
 			name: "start service error no offers file",
 			modifyConfig: func() {
+				prepareConfig()
 				os.Setenv("AZURE_OFFERS_FILE", "offers_test.yml")
 			},
 			wantErr: true,
@@ -25,6 +29,7 @@ func TestStartService(t *testing.T) {
 		{
 			name: "start service error invalid offers file",
 			modifyConfig: func() {
+				prepareConfig()
 				os.Setenv("AZURE_OFFERS_FILE", "testdata/invalid_offers_test.yml")
 			},
 			wantErr: true,
@@ -32,6 +37,7 @@ func TestStartService(t *testing.T) {
 		{
 			name: "start service error cert file not found",
 			modifyConfig: func() {
+				prepareConfig()
 				os.Setenv("AZURE_CERT_FILE", "testdata/ca_cert.txt")
 			},
 			wantErr: true,
@@ -39,6 +45,7 @@ func TestStartService(t *testing.T) {
 		{
 			name: "start service error invalid cert file",
 			modifyConfig: func() {
+				prepareConfig()
 				os.Setenv("AZURE_CERT_FILE", "testdata/invalid_ca_cert.txt")
 			},
 			wantErr: true,
@@ -46,15 +53,31 @@ func TestStartService(t *testing.T) {
 		{
 			name: "start service error resource index out of bounds",
 			modifyConfig: func() {
+				prepareConfig()
 				// add a new resource index in config, as iota cannot be modified
 				instances[len(config.Resources)+1] = nil
+			},
+			wantErr: true,
+		},
+		{
+			name: "start service success with https proxy",
+			modifyConfig: func() {
+				prepareConfig()
+				os.Setenv("HTTPS_PROXY", "http://localhost:8200")
+			},
+			wantErr: false,
+		},
+		{
+			name: "start service failure with invalid https proxy",
+			modifyConfig: func() {
+				prepareConfig()
+				os.Setenv("HTTPS_PROXY", "http://localhost:8200%/")
 			},
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			prepareTestEnvironment()
 			if tt.modifyConfig != nil {
 				tt.modifyConfig()
 			}
@@ -62,5 +85,15 @@ func TestStartService(t *testing.T) {
 				t.Errorf("StartService() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
+	}
+}
+
+func prepareConfig() {
+	os.Setenv("AZURE_OFFERS_FILE", "testdata/offers_test.yml")
+	os.Setenv("AZURE_CERT_FILE", "testdata/test_ca_cert.txt")
+	config.IdentityCAFile = os.Getenv("AZURE_CERT_FILE")
+	instances = map[int]*AZService{
+		managementResourceIndex: nil,
+		graphResourceIndex:      nil,
 	}
 }

@@ -2,6 +2,8 @@ package google
 
 import (
 	"fmt"
+	"net/http"
+	"net/url"
 	"os"
 	"strings"
 
@@ -29,9 +31,26 @@ type GCEConfig struct {
 var Config = GCEConfig{
 	ServiceAccountKeyFile: os.Getenv("GOOGLE_KEYFILE"),
 	JwkURL:                os.Getenv("GOOGLE_JWK_URL"),
+	clientOpts:            prepareClientOpts,
 }
 
-type getOpts func() []option.ClientOption
+type getOpts func() ([]option.ClientOption, error)
+
+func prepareClientOpts() ([]option.ClientOption, error) {
+	opts := []option.ClientOption{}
+	if os.Getenv("HTTPS_PROXY") != "" {
+		proxyURL, err := url.Parse(os.Getenv("HTTPS_PROXY"))
+		if err != nil {
+			return nil, fmt.Errorf("unable to parse HTTPS_PROXY: %w", err)
+		}
+		opts = append(opts, option.WithHTTPClient(&http.Client{
+			Transport: &http.Transport{
+				Proxy: http.ProxyURL(proxyURL),
+			},
+		}))
+	}
+	return opts, nil
+}
 
 // NewService creates a new cloudidentity.service from the GCEConfig.
 func (c GCEConfig) NewService() (*Service, error) {
@@ -58,7 +77,11 @@ func (c GCEConfig) NewService() (*Service, error) {
 
 	// if clientOpts is set, use it to get the client options
 	if Config.clientOpts != nil {
-		opts = append(opts, Config.clientOpts()...)
+		customOpts, err := Config.clientOpts()
+		if err != nil {
+			return nil, fmt.Errorf("unable to get client options: %w", err)
+		}
+		opts = append(opts, customOpts...)
 	}
 
 	// Build cloud identity API client
