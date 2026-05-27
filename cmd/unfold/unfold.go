@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"runtime/debug"
 
 	"github.com/aryannr97/unfold/pkg/azure"
 	"github.com/aryannr97/unfold/pkg/commands"
@@ -12,8 +13,21 @@ import (
 	"github.com/aryannr97/unfold/pkg/spinner"
 )
 
-// Version is the release version of the unfold CLI
+// Version is the release version of the unfold CLI, set via -ldflags at build time.
+// Falls back to Go module build info (populated by go install) or "dev".
 var Version string
+
+var readBuildInfo = debug.ReadBuildInfo
+
+func getVersion() string {
+	if Version != "" {
+		return Version
+	}
+	if info, ok := readBuildInfo(); ok && info.Main.Version != "" && info.Main.Version != "(devel)" {
+		return info.Main.Version
+	}
+	return "dev"
+}
 
 func main() {
 	// Collect the cli command registry
@@ -48,7 +62,7 @@ func run(reg registry.Registry) string {
 			return fmt.Sprintf("[unfold] %s", err.Error())
 		}
 	case commands.Version:
-		return Version
+		return getVersion()
 	}
 
 	// Capture the output in common variable
