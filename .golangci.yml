@@ -1,11 +1,12 @@
+version: "2"
+
 run:
-  timeout: 5m
   tests: false
 
 linters:
   enable:
     - govet
-    - staticcheck  
+    - staticcheck
     - unused
     - ineffassign
     - gosec
@@ -22,17 +23,16 @@ linters:
     - gocyclo
     - revive
     - goconst
-
-linters-settings:
-  gocritic:
-    enabled-tags:
-      - diagnostic
-      - performance
-      #- security
-    disabled-checks:
-      - commentedOutCode  # Allow commented code
-      - ifElseChain      # Don't force switch statements
-
-issues:
-  exclude-dirs:
-    - pkg/aws
+  settings:
+    gocritic:
+      enabled-tags:
+        - diagnostic
+        - performance
+        #- security
+      disabled-checks:
+        - commentedOutCode
+        - ifElseChain
+  exclusions:
+    generated: lax
+    paths:
+      - pkg/aws
