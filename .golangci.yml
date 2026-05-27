@@ -34,5 +34,10 @@ linters:
         - ifElseChain
   exclusions:
     generated: lax
+    presets:
+      - comments
+      - std-error-handling
+      - common-false-positives
+      - legacy
     paths:
       - pkg/aws
