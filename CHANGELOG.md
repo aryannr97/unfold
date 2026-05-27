@@ -1,3 +1,17 @@
+## [1.0.2](https://github.com/aryannr97/unfold/compare/v1.0.1...v1.0.2) (2026-05-27)
+
+### Bug Fixes
+
+* correct semantic-release config for v25 compatibility ([#7](https://github.com/aryannr97/unfold/issues/7)) ([e9e1241](https://github.com/aryannr97/unfold/commit/e9e1241729a284e3b99321f3c3d37e84552ff87b))
+
+### Documentation
+
+* code coverage badge ([68fcd5b](https://github.com/aryannr97/unfold/commit/68fcd5bd08a517de4180ae48684c22d08a056811))
+
+### Continuous Integration
+
+* update codecov ([17e6997](https://github.com/aryannr97/unfold/commit/17e6997b8336f842f85336708ab62ff9881ce086))
+
 ## [1.0.1](https://github.com/aryannr97/unfold/compare/v1.0.0...v1.0.1) (2025-08-10)
 
 
