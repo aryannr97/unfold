@@ -107,9 +107,10 @@ func prepareRequestBody(image string, plans []string, audienceList []MSProperty,
 			},
 		}
 
-		if mode == "add" {
+		switch mode {
+		case "add":
 			resource.PrivateAudiences.Add = audienceList
-		} else if mode == "remove" {
+		case "remove":
 			resource.PrivateAudiences.Remove = audienceList
 		}
 

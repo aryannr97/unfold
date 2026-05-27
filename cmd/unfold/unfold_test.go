@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"os"
+	"runtime/debug"
 	"testing"
 
 	"github.com/aryannr97/unfold/pkg/registry"
@@ -171,12 +172,20 @@ func Test_run(t *testing.T) {
 			expectedOutput: "[unfold] open : no such file or directory",
 		},
 		{
-			name: "version command success",
+			name: "version command success with ldflags",
 			env: func() {
-				Version = "test-version"
+				Version = "v1.2.3"
 			},
 			cmdArgs:        []string{"unfold", "--version"},
-			expectedOutput: "test-version",
+			expectedOutput: "v1.2.3",
+		},
+		{
+			name: "version command falls back to dev",
+			env: func() {
+				Version = ""
+			},
+			cmdArgs:        []string{"unfold", "--version"},
+			expectedOutput: "dev",
 		},
 	}
 	for _, tt := range tests {
@@ -188,6 +197,70 @@ func Test_run(t *testing.T) {
 			output := run(tt.args.reg)
 			if output != tt.expectedOutput {
 				t.Errorf("expected output %s, got %s", tt.expectedOutput, output)
+			}
+		})
+	}
+}
+
+func Test_getVersion(t *testing.T) {
+	tests := []struct {
+		name          string
+		version       string
+		buildInfo     *debug.BuildInfo
+		buildInfoOk   bool
+		expected      string
+	}{
+		{
+			name:     "returns ldflags version when set",
+			version:  "v2.0.0",
+			expected: "v2.0.0",
+		},
+		{
+			name:        "returns build info version from go install",
+			version:     "",
+			buildInfo:   &debug.BuildInfo{Main: debug.Module{Version: "v1.5.0"}},
+			buildInfoOk: true,
+			expected:    "v1.5.0",
+		},
+		{
+			name:        "falls back to dev when build info version is (devel)",
+			version:     "",
+			buildInfo:   &debug.BuildInfo{Main: debug.Module{Version: "(devel)"}},
+			buildInfoOk: true,
+			expected:    "dev",
+		},
+		{
+			name:        "falls back to dev when build info version is empty",
+			version:     "",
+			buildInfo:   &debug.BuildInfo{Main: debug.Module{Version: ""}},
+			buildInfoOk: true,
+			expected:    "dev",
+		},
+		{
+			name:        "falls back to dev when build info is unavailable",
+			version:     "",
+			buildInfo:   nil,
+			buildInfoOk: false,
+			expected:    "dev",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			originalVersion := Version
+			originalReadBuildInfo := readBuildInfo
+			defer func() {
+				Version = originalVersion
+				readBuildInfo = originalReadBuildInfo
+			}()
+
+			Version = tt.version
+			readBuildInfo = func() (*debug.BuildInfo, bool) {
+				return tt.buildInfo, tt.buildInfoOk
+			}
+
+			got := getVersion()
+			if got != tt.expected {
+				t.Errorf("getVersion() = %q, want %q", got, tt.expected)
 			}
 		})
 	}
