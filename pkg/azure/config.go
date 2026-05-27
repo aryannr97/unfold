@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"net/url"
 	"os"
 
 	"golang.org/x/oauth2"
@@ -97,18 +96,12 @@ func (c *AZConfig) NewService(resourceIndex int) (*AZService, error) {
 		return nil, fmt.Errorf("unable to load Azure identity CA certs: %w", err)
 	}
 
-	httpClient := oauthConf.Client(context.TODO())
-	if os.Getenv("HTTPS_PROXY") != "" {
-		proxyURL, err := url.Parse(os.Getenv("HTTPS_PROXY"))
-		if err != nil {
-			return nil, fmt.Errorf("unable to parse HTTPS_PROXY: %w", err)
-		}
-		httpClient.Transport = &http.Transport{
-			Proxy: http.ProxyURL(proxyURL),
-		}
-	}
-
-	return &AZService{BaseURL: c.Resources[resourceIndex], Publisher: c.Publisher, httpClient: httpClient, IdentityCACerts: certs}, nil
+	return &AZService{
+		BaseURL:         c.Resources[resourceIndex],
+		Publisher:       c.Publisher,
+		httpClient:      oauthConf.Client(context.TODO()),
+		IdentityCACerts: certs,
+	}, nil
 }
 
 // StartService starts the Azure service
