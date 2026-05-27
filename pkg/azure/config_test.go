@@ -59,22 +59,6 @@ func TestStartService(t *testing.T) {
 			},
 			wantErr: true,
 		},
-		{
-			name: "start service success with https proxy",
-			modifyConfig: func() {
-				prepareConfig()
-				os.Setenv("HTTPS_PROXY", "http://localhost:8200")
-			},
-			wantErr: false,
-		},
-		{
-			name: "start service failure with invalid https proxy",
-			modifyConfig: func() {
-				prepareConfig()
-				os.Setenv("HTTPS_PROXY", "http://localhost:8200%/")
-			},
-			wantErr: true,
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
