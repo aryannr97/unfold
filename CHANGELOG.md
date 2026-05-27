@@ -1,3 +1,9 @@
+## [1.0.3](https://github.com/aryannr97/unfold/compare/v1.0.2...v1.0.3) (2026-05-27)
+
+### Bug Fixes
+
+* revert custom https_proxy changes to take effect natively ([#8](https://github.com/aryannr97/unfold/issues/8)) ([522a260](https://github.com/aryannr97/unfold/commit/522a2601bafbe197fa17a368eddd1ba67c157c40))
+
 ## [1.0.2](https://github.com/aryannr97/unfold/compare/v1.0.1...v1.0.2) (2026-05-27)
 
 ### Bug Fixes
