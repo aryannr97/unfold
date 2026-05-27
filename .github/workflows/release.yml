@@ -15,13 +15,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         fetch-depth: 0
         token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Set up Go
-      uses: actions/setup-go@v5
+      uses: actions/setup-go@v6
       with:
         go-version: '1.24.x'
         cache: true
@@ -33,7 +33,7 @@ jobs:
       run: make test-coverage
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v6
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: ./coverage.out
@@ -42,18 +42,18 @@ jobs:
         fail_ci_if_error: true
 
     - name: Set up Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v6
       with:
-        node-version: '20'
+        node-version: '22'
 
     - name: Install semantic-release
       run: |
-        npm install -g semantic-release@22 \
+        npm install -g semantic-release@25 \
           @semantic-release/changelog@6 \
           @semantic-release/git@10 \
-          @semantic-release/github@9 \
-          @semantic-release/exec@6 \
-          conventional-changelog-conventionalcommits@7
+          @semantic-release/github@11 \
+          @semantic-release/exec@7 \
+          conventional-changelog-conventionalcommits@8
     
     - name: Get next version
       id: version
@@ -71,14 +71,12 @@ jobs:
       run: |
         mkdir -p dist
         VERSION=${{ steps.version.outputs.version }}
-        # Build into per-OS directories with binary named 'unfold' (or 'unfold.exe' on Windows)
         mkdir -p dist/linux-amd64 dist/darwin-amd64 dist/darwin-arm64 dist/windows-amd64
         CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags="-s -w -X main.Version=v$VERSION" -o dist/linux-amd64/unfold ./cmd/unfold
         CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -trimpath -ldflags="-s -w -X main.Version=v$VERSION" -o dist/darwin-amd64/unfold ./cmd/unfold
         CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -trimpath -ldflags="-s -w -X main.Version=v$VERSION" -o dist/darwin-arm64/unfold ./cmd/unfold
         CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -trimpath -ldflags="-s -w -X main.Version=v$VERSION" -o dist/windows-amd64/unfold.exe ./cmd/unfold
 
-        # Package as archives with OS-specific filenames for unique assets; binaries inside are named 'unfold'
         tar -C dist/linux-amd64 -czf dist/unfold-linux-amd64.tar.gz unfold
         tar -C dist/darwin-amd64 -czf dist/unfold-darwin-amd64.tar.gz unfold
         tar -C dist/darwin-arm64 -czf dist/unfold-darwin-arm64.tar.gz unfold
@@ -88,4 +86,4 @@ jobs:
     - name: Semantic Release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: semantic-release 
+      run: semantic-release
